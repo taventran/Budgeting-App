@@ -4,22 +4,18 @@ from models import User, MoneyAmount
 conn = sqlite3.connect(':memory:')
 c = conn.cursor()
     
-
-
 c.execute('''CREATE TABLE IF NOT EXISTS users (
             ID INTEGER PRIMARY KEY,
             username TEXT,
             password TEXT
             );''')
 
-c.execute('''CREATE TABLE IF NOT EXISTS budgetItem (
+c.execute('''CREATE TABLE IF NOT EXISTS moneyAmount (
             monthlyAmount real,
             savings real,
-            user_id integer,
+            user_id INTEGER,
             FOREIGN KEY(user_id) REFERENCES users(ID)
             );''')
-
-# c.execute("INSERT INTO users VALUES (:username, :password)", {'username':emp_2.username, 'password':emp_2.password })
 
 def create_user(User):
     new_username = User.username
@@ -41,8 +37,6 @@ def verify_login(User):
     c.execute("SELECT * FROM users where username=:username", {"username": username})
     check = c.fetchall()
     no_id = [info[1:3] for info in check]
-    print(check)
-    print(no_id)
     if no_id[0] == compare:
         return True
     else: 
@@ -50,3 +44,17 @@ def verify_login(User):
 
 def get_user_id(username):
     c.execute("SELECT * FROM users where username=:username", {"username": username})
+    get_id = c.fetchall()
+    id = [info[0] for info in get_id]
+    return id[0]
+
+def get_amount_of_money(MoneyAmount, id):
+    with conn:
+        c.execute("INSERT INTO moneyAmount('monthlyAmount', 'savings', 'user_id') VALUES (?, ?, ?)",
+                (MoneyAmount.monthly_check, MoneyAmount.savings, id))
+    c.execute("SELECT * FROM moneyAmount where user_id=:user_id", {'user_id':id})
+    check = c.fetchall()
+    print(check)
+
+def display_money():
+    pass

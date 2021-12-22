@@ -4,7 +4,7 @@ of their paycheck they allocate to that sector
 '''
 import tkinter as tk
 from models import User, MoneyAmount
-from database import create_user, verify_login
+from database import create_user, verify_login, get_user_id, get_amount_of_money
 
 # Set current user to none and changes it once a valid login occurs
 CURRENT_USER = None
@@ -101,8 +101,12 @@ class GetInfoPage(tk.Frame):
             def fresh_start():
                 monthlyPay = self.monthlyPay.get()   
                 savings = self.savings.get()
-                money = MoneyAmount(monthlyPay, savings, CURRENT_USER) 
+                money = MoneyAmount(monthlyPay, savings, CURRENT_USER.username) 
                 print(money)
+                id = get_user_id(money.user)
+                print(id)
+                get_amount_of_money(money, id)
+                return parent.replace_frame(HomePage)
         except:
             pass
 
