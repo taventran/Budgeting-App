@@ -3,8 +3,11 @@ Budgeting app that shows how much a user can spend based on what percentage
 of their paycheck they allocate to that sector
 '''
 import tkinter as tk
-from models import User
+from models import User, MoneyAmount
 from database import create_user, verify_login
+
+# Set current user to none and changes it once a valid login occurs
+CURRENT_USER = None
 
 class BuildPage(tk.Tk):
     def __init__(self):
@@ -36,8 +39,10 @@ class LoginPage(tk.Frame):
             password = self.password.get()
             user = User(username, password)
             value = verify_login(user)
+            global CURRENT_USER
+            CURRENT_USER = user
             if value == True:
-                return parent.replace_frame(HomePage(user))
+                return parent.replace_frame(HomePage)
             else: 
                 tk.Label(self, text="Invalid login information").pack()
   
@@ -74,9 +79,9 @@ class RegisterPage(tk.Frame):
 class HomePage(tk.Frame):
     def __init__(self, parent):
         tk.Frame.__init__(self, parent)
-        tk.Label(self, text=f"welcome!")
         tk.Label(self, text="Home Page").pack()
-        tk.Button(self, text="New Information", 
+        tk.Label(self, text=f"{CURRENT_USER.username} welcome!").pack()
+        tk.Button(self, text="Fresh Start", 
             command=lambda: parent.replace_frame(GetInfoPage)).pack()
         tk.Button(self, text="Signout", 
             command=lambda: parent.replace_frame(LoginPage)).pack()
@@ -86,22 +91,23 @@ class GetInfoPage(tk.Frame):
     spend on each sector,and the percentage amount they want to save. '''
     def __init__(self, parent):
         tk.Frame.__init__(self, parent)
-        tk.Label(self, text="Put New Information").pack()
-        self.entry = tk.Entry(self)
+        tk.Label(self, text="Put monthly paycheck and savings").pack()
+        self.monthlyPay = tk.Entry(self)
+        self.monthlyPay.pack()
+        self.savings = tk.Entry(self)
+        self.savings.pack()
 
-#TODO decide what information to get 
         try:
-            def get_numbers(self):
-                getEntry = self.entry.get()
-                print(getEntry)
-                with open('info.txt', 'a') as file:
-                    file.write(getEntry)
-        except: 
+            def fresh_start():
+                monthlyPay = self.monthlyPay.get()   
+                savings = self.savings.get()
+                money = MoneyAmount(monthlyPay, savings, CURRENT_USER) 
+                print(money)
+        except:
             pass
 
         tk.Label(text="Invalid Entry")
-        self.entry.pack()
-        tk.Button(self, text="Submit", command=get_numbers).pack()
+        tk.Button(self, text="Submit", command=fresh_start).pack()
         tk.Button(self, text="Home Page", 
             command=lambda: parent.replace_frame(HomePage)).pack()
 
