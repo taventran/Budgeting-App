@@ -93,8 +93,10 @@ class GetInfoPage(tk.Frame):
         tk.Frame.__init__(self, parent)
         tk.Label(self, text="Put monthly paycheck and savings").pack()
         self.monthlyPay = tk.Entry(self)
+        self.monthlyPay.insert(0, 'Monthly Paycheck')
         self.monthlyPay.pack()
         self.savings = tk.Entry(self)
+        self.savings.insert(0, 'Percentage you want to stay')
         self.savings.pack()
 
         try:
