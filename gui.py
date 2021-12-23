@@ -81,14 +81,15 @@ class HomePage(tk.Frame):
         tk.Frame.__init__(self, parent)
         tk.Label(self, text="Home Page").pack()
         tk.Label(self, text=f"{CURRENT_USER.username} welcome!").pack()
-        tk.Button(self, text="Fresh Start", 
-            command=lambda: parent.replace_frame(GetInfoPage)).pack()
+        tk.Button(self, text="Monthly Paycheck", 
+            command=lambda: parent.replace_frame(MonthlyAllowancePage)).pack()
+        tk.Button(self, text="Budget Item",
+            command=lambda: parent.replace_frame(BudgetItemPage)).pack()
         tk.Button(self, text="Signout", 
             command=lambda: parent.replace_frame(LoginPage)).pack()
 
-class GetInfoPage(tk.Frame):
-    '''Gets how much user will make that month, asks them how much they want to 
-    spend on each sector,and the percentage amount they want to save. '''
+class MonthlyAllowancePage(tk.Frame):
+    '''Gets how much user will make that month, and the percentage amount they want to save. '''
     def __init__(self, parent):
         tk.Frame.__init__(self, parent)
         tk.Label(self, text="Put monthly paycheck and savings").pack()
@@ -98,8 +99,12 @@ class GetInfoPage(tk.Frame):
         self.savings = tk.Entry(self)
         self.savings.insert(0, 'Percentage you want to stay')
         self.savings.pack()
-
         try:
+            def validate(MoneyAmount, id):
+                if isinstance(MoneyAmount):
+                    pass
+                else:
+                    pass
             def fresh_start():
                 monthlyPay = self.monthlyPay.get()   
                 savings = self.savings.get()
@@ -116,6 +121,12 @@ class GetInfoPage(tk.Frame):
         tk.Button(self, text="Submit", command=fresh_start).pack()
         tk.Button(self, text="Home Page", 
             command=lambda: parent.replace_frame(HomePage)).pack()
+
+class BudgetItemPage(tk.Frame):
+    def __init__(self, parent):
+        tk.Frame.__init__(self, parent)
+        pass
+
 
 
 if __name__ == '__main__':

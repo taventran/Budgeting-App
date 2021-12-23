@@ -21,6 +21,12 @@ class MoneyAmount():
 
 
 class Spending():
-    def __init__(self, amount_spent):
-        self.amount_spent
+    def __init__(self, item, percentages, amount_spent=0):
+        self.item = item
+        self.percentages = percentages
+        self.amount_spent = amount_spent
+
+
+class Date():
+    pass
 
