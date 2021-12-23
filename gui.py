@@ -4,7 +4,7 @@ of their paycheck they allocate to that sector
 '''
 import tkinter as tk
 from models import User, MoneyAmount
-from database import create_user, verify_login, get_user_id, get_amount_of_money
+from database import create_user, verify_login, get_user_id, get_amount_of_money, display_money
 
 # Set current user to none and changes it once a valid login occurs
 CURRENT_USER = None
@@ -74,7 +74,6 @@ class RegisterPage(tk.Frame):
                 tk.Label(self, text="Username might be taken").pack()
 
         tk.Button(self, text="Submit", command=get_info).pack()
-
         
 class HomePage(tk.Frame):
     def __init__(self, parent):
@@ -87,6 +86,16 @@ class HomePage(tk.Frame):
             command=lambda: parent.replace_frame(BudgetItemPage)).pack()
         tk.Button(self, text="Signout", 
             command=lambda: parent.replace_frame(LoginPage)).pack()
+        id = get_user_id(CURRENT_USER.username)
+        info = display_money(id)
+        if len(info) > 0:
+            monthly_allowance = [allowance[0] for allowance in info]
+            savings = [save[1] for save in info]
+            savings_in_dollars = [dollar_amount[2] for dollar_amount in info]
+            information = tk.Label(self, text=f"Monthly Allowance {monthly_allowance[0]}").pack()
+            information2 = tk.Label(self, text=f"Saving {savings[0]}% this month").pack()
+            information3 = tk.Label(self, text=f"Saving {savings_in_dollars[0]}$ this month").pack()
+
 
 class MonthlyAllowancePage(tk.Frame):
     '''Gets how much user will make that month, and the percentage amount they want to save. '''
@@ -97,36 +106,35 @@ class MonthlyAllowancePage(tk.Frame):
         self.monthlyPay.insert(0, 'Monthly Paycheck')
         self.monthlyPay.pack()
         self.savings = tk.Entry(self)
-        self.savings.insert(0, 'Percentage you want to stay')
+        self.savings.insert(0, 'Percentage you want to save')
         self.savings.pack()
-        try:
-            def validate(MoneyAmount, id):
-                if isinstance(MoneyAmount):
-                    pass
+        self.error = tk.Label(self, text="Monthly pay needs to be a number and savings need to be a positive whole number!")
+        def get_info():
+            try:
+                monthlyPay = float(self.monthlyPay.get())   
+                savings = int(self.savings.get())
+                if (savings < 0) or (savings > 100):
+                    tk.Label(self, text="Savings need to be a whole number between 0 and 100").pack()
                 else:
-                    pass
-            def fresh_start():
-                monthlyPay = self.monthlyPay.get()   
-                savings = self.savings.get()
-                money = MoneyAmount(monthlyPay, savings, CURRENT_USER.username) 
-                print(money)
-                id = get_user_id(money.user)
-                print(id)
-                get_amount_of_money(money, id)
-                return parent.replace_frame(HomePage)
-        except:
-            pass
+                    money = MoneyAmount(monthlyPay, savings, CURRENT_USER.username)
+                    id = get_user_id(money.user)
+                    print(id)
+                    get_amount_of_money(money, id)
+                    self.error.destroy()
+                    return parent.replace_frame(HomePage)
+            except ValueError:
+                self.error.pack()
 
         tk.Label(text="Invalid Entry")
-        tk.Button(self, text="Submit", command=fresh_start).pack()
+        tk.Button(self, text="Submit", command=get_info).pack()
         tk.Button(self, text="Home Page", 
             command=lambda: parent.replace_frame(HomePage)).pack()
 
 class BudgetItemPage(tk.Frame):
     def __init__(self, parent):
         tk.Frame.__init__(self, parent)
-        pass
-
+        tk.Button(self, text="Home Page",
+            command= lambda: parent.replace_frame(HomePage)).pack()
 
 
 if __name__ == '__main__':

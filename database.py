@@ -12,7 +12,8 @@ c.execute('''CREATE TABLE IF NOT EXISTS users (
 
 c.execute('''CREATE TABLE IF NOT EXISTS moneyAmount (
             monthlyAmount real,
-            savings real,
+            savings INTEGER,
+            savings_dollar_amount real,
             user_id INTEGER,
             FOREIGN KEY(user_id) REFERENCES users(ID)
             );''')
@@ -50,11 +51,18 @@ def get_user_id(username):
 
 def get_amount_of_money(MoneyAmount, id):
     with conn:
-        c.execute("INSERT INTO moneyAmount('monthlyAmount', 'savings', 'user_id') VALUES (?, ?, ?)",
-                (MoneyAmount.monthly_check, MoneyAmount.savings, id))
-    c.execute("SELECT * FROM moneyAmount where user_id=:user_id", {'user_id':id})
-    check = c.fetchall()
-    print(check)
+        c.execute("SELECT * FROM moneyAmount where user_id=:user_id", {'user_id':id})
+        check = c.fetchall()
+        if len(check) == 1:
+            c.execute("DELETE From moneyAmount where user_id=:user_id", {'user_id':id})
+            c.execute("INSERT INTO moneyAmount('monthlyAmount', 'savings', 'savings_dollar_amount', 'user_id') VALUES (?, ?, ?, ?)",
+                (MoneyAmount.monthly_check, MoneyAmount.savings, MoneyAmount.savings_dollar_amount, id))
+        else:
+            c.execute("INSERT INTO moneyAmount('monthlyAmount', 'savings', 'savings_dollar_amount', 'user_id') VALUES (?, ?, ?, ?)",
+                (MoneyAmount.monthly_check, MoneyAmount.savings, MoneyAmount.savings_dollar_amount, id))
 
-def display_money():
-    pass
+def display_money(id):
+    with conn:
+        c.execute("SELECT * FROM moneyAmount where user_id=:user_id", {'user_id':id})
+        check = c.fetchall()
+    return(check)

@@ -14,6 +14,7 @@ class MoneyAmount():
     def __init__(self, monthly_check, savings, user):
         self.monthly_check = monthly_check
         self.savings = savings
+        self.savings_dollar_amount =  monthly_check * (self.savings/100)
         self.user = user
     
     def __repr__(self):
