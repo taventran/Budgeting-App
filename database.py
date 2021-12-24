@@ -38,9 +38,12 @@ def verify_login(User):
     c.execute("SELECT * FROM users where username=:username", {"username": username})
     check = c.fetchall()
     no_id = [info[1:3] for info in check]
-    if no_id[0] == compare:
-        return True
-    else: 
+    try:
+        if no_id[0] == compare:
+            return True
+        else: 
+            return False
+    except IndexError:
         return False
 
 def get_user_id(username):
