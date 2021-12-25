@@ -1,3 +1,6 @@
+'''
+Create class models that will be used by gui.py to organize how the information will be created by the database
+'''
 from datetime import date
 
 class User():
@@ -21,11 +24,14 @@ class MoneyAmount():
         return f"{self.user}"
 
 
-class Spending():
-    def __init__(self, item, percentages, amount_spent=0):
+
+class BudgetItem():
+    def __init__(self, item, percentages, allowed_to_spend, amount_spent=0):
         self.item = item
         self.percentages = percentages
+        self.allowed_to_spend = allowed_to_spend
         self.amount_spent = amount_spent
+
 
 
 class Date():

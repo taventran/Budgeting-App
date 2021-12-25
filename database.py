@@ -1,5 +1,9 @@
+'''
+Handles most of all the database logic for the gui to use
+'''
+
 import sqlite3
-from models import User, MoneyAmount
+from models import User, MoneyAmount, BudgetItem
 
 conn = sqlite3.connect(':memory:')
 c = conn.cursor()
@@ -17,6 +21,15 @@ c.execute('''CREATE TABLE IF NOT EXISTS moneyAmount (
             user_id INTEGER,
             FOREIGN KEY(user_id) REFERENCES users(ID)
             );''')
+
+c.execute('''CREATE TABLE IF NOT EXISTS items (
+            item TEXT,
+            percent INTEGER,
+            allowed_to_spend REAL,
+            spent REAL,
+            user_id INTEGER,
+            FOREIGN KEY(user_id) REFERENCES USER(ID)
+        )''')
 
 def create_user(User):
     new_username = User.username
@@ -52,7 +65,7 @@ def get_user_id(username):
     id = [info[0] for info in get_id]
     return id[0]
 
-def get_amount_of_money(MoneyAmount, id):
+def get_amount_of_money(MoneyAmount, id):    
     with conn:
         c.execute("SELECT * FROM moneyAmount where user_id=:user_id", {'user_id':id})
         check = c.fetchall()
@@ -69,3 +82,13 @@ def display_money(id):
         c.execute("SELECT * FROM moneyAmount where user_id=:user_id", {'user_id':id})
         check = c.fetchall()
     return(check)
+
+def get_budget_item(BudgetItem, id):
+    with conn:
+        c.execute("INSERT INTO items('item', 'percent', 'allowed_to_spend', 'spent', 'user_id') VALUES (?, ?, ?, ?, ?)",
+                    (BudgetItem.item, BudgetItem.percentages, BudgetItem.allowed_to_spend, BudgetItem.amount_spent, id))
+
+    c.execute("SELECT * FROM items where user_id=:user_id", {'user_id':id})
+    check = c.fetchall()
+    print(check)
+    return check
