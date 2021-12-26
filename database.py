@@ -31,6 +31,7 @@ c.execute('''CREATE TABLE IF NOT EXISTS items (
             FOREIGN KEY(user_id) REFERENCES USER(ID)
         )''')
 
+
 def create_user(User):
     new_username = User.username
     new_password = User.password
@@ -43,6 +44,7 @@ def create_user(User):
         return True
     else:
         return False
+
 
 def verify_login(User):
     username = User.username
@@ -59,11 +61,13 @@ def verify_login(User):
     except IndexError:
         return False
 
+
 def get_user_id(username):
     c.execute("SELECT * FROM users where username=:username", {"username": username})
     get_id = c.fetchall()
     id = [info[0] for info in get_id]
     return id[0]
+
 
 def get_amount_of_money(MoneyAmount, id):    
     with conn:
@@ -76,6 +80,11 @@ def get_amount_of_money(MoneyAmount, id):
         else:
             c.execute("INSERT INTO moneyAmount('monthlyAmount', 'savings', 'savings_dollar_amount', 'user_id') VALUES (?, ?, ?, ?)",
                 (MoneyAmount.monthly_check, MoneyAmount.savings, MoneyAmount.savings_dollar_amount, id))
+    with conn:
+        c.execute("SELECT *FROM items where user_id=:user_id", {'user_id':id})
+        check = c.fetchall()
+        if len(check) >= 1:
+            c.execute("DELETE FROM items where user_id=:user_id", {'user_id':id})
 
 def display_money(id):
     with conn:
@@ -83,12 +92,34 @@ def display_money(id):
         check = c.fetchall()
     return(check)
 
+
 def get_budget_item(BudgetItem, id):
     with conn:
         c.execute("INSERT INTO items('item', 'percent', 'allowed_to_spend', 'spent', 'user_id') VALUES (?, ?, ?, ?, ?)",
                     (BudgetItem.item, BudgetItem.percentages, BudgetItem.allowed_to_spend, BudgetItem.amount_spent, id))
 
+
+def show_budget_items(id):
     c.execute("SELECT * FROM items where user_id=:user_id", {'user_id':id})
     check = c.fetchall()
     print(check)
     return check
+
+
+def update_spending_budget_item(spent, item):
+    with conn:
+        c.execute("UPDATE items set spent = ? where item = ?",(spent, item))
+    c.execute("SELECT * FROM items where item=:item", {'item':item})
+    check = c.fetchall()
+    print(check)
+    return check
+
+
+def delete_budget_item(item):
+    with conn:
+        c.execute("DELETE from items where item=:item", {'item':item})
+
+def get_already_spent(item):
+    c.execute("SELECT * FROM items where item=:item", {'item':item})
+    check = c.fetchone()
+    return check[3]

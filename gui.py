@@ -4,7 +4,9 @@ of their paycheck they allocate to that sector
 '''
 import tkinter as tk
 from models import User, MoneyAmount, BudgetItem
-from database import create_user, verify_login, get_user_id, get_amount_of_money, display_money, get_budget_item
+from functools import partial
+from database import create_user, show_budget_items, update_spending_budget_item, get_already_spent
+from database import verify_login, get_user_id, get_amount_of_money, display_money, get_budget_item, show_budget_items
 
 # Set current user to none and changes it once a valid login occurs
 CURRENT_USER = None
@@ -26,7 +28,7 @@ class BuildPage(tk.Tk):
 class LoginPage(tk.Frame):
     def __init__(self, parent):
         tk.Frame.__init__(self, parent)
-        tk.Label(self, text='test', font=("Cambria", 26)).pack(pady=10)
+        tk.Label(self, text='Login', font=("Cambria", 26)).pack(pady=10)
         self.username = tk.Entry(self, font=("Cambria", 12))
         self.username.insert(0, 'Username')
         self.username.pack(pady=10)
@@ -65,6 +67,9 @@ class RegisterPage(tk.Frame):
         self.password.insert(0, 'New Code 6 Numbers!')
         self.user.pack(pady=10)
         self.password.pack(pady=10)
+        self.invalid = tk.Label(self, text="Username already taken", font=("Cambria", 12))
+        self.invalid.pack()
+        self.invalid.pack_forget()
 
         def get_info():
             username = self.user.get()
@@ -78,6 +83,7 @@ class RegisterPage(tk.Frame):
 
         tk.Button(self, text="Submit", command=get_info, font=("Cambria", 12)).pack()
         
+
 class HomePage(tk.Frame):
     def __init__(self, parent):
         tk.Frame.__init__(self, parent)
@@ -95,19 +101,20 @@ class HomePage(tk.Frame):
             information3 = tk.Label(self, text=f"Saving {savings_in_dollars[0]:.2f}$ this month").pack(pady=10)
             tk.Button(self, text="Budget Item", font=("Cambria", 15),
                 command=lambda: parent.replace_frame(BudgetItemPage)).pack(pady=10)
+            tk.Button(self, text="Update Item Spending", font=("Cambria", 15),
+                command=lambda: parent.replace_frame(UpdateSpending)).pack(pady=10)
 
         tk.Button(self, text="Monthly Paycheck", font=("Cambria", 15),
             command=lambda: parent.replace_frame(MonthlyAllowancePage)).pack(pady=10)
         tk.Button(self, text="Signout", font=("Cambria", 15),
             command=lambda: parent.replace_frame(LoginPage)).pack(pady=10)
     
-    
-
 
 class MonthlyAllowancePage(tk.Frame):
     '''Gets how much user will make that month, and the percentage amount they want to save. '''
     def __init__(self, parent):
         tk.Frame.__init__(self, parent)
+        tk.Label(text= "Updating monthly allowance will delete all of your budget items for this month!")
         tk.Label(self, text="Put monthly paycheck and savings", font=("Cambria", 26)).pack(pady=10)
         self.monthlyPay = tk.Entry(self, font=("Cambria", 12))
         self.monthlyPay.insert(0, 'Monthly Paycheck')
@@ -137,6 +144,7 @@ class MonthlyAllowancePage(tk.Frame):
         tk.Button(self, text="Home Page", font=("Cambria", 15),
             command=lambda: parent.replace_frame(HomePage)).pack(pady=10)
 
+
 class BudgetItemPage(tk.Frame):
     def __init__(self, parent):
         tk.Frame.__init__(self, parent)
@@ -157,12 +165,41 @@ class BudgetItemPage(tk.Frame):
             allowed_to_spend = monthly_allowance[0] * (int(percent)/100)
             budget_class = BudgetItem(item, percent, allowed_to_spend)
             get_budget_item(budget_class, id)
+            return parent.replace_frame(HomePage)
 
 
         tk.Button(self, text="Submit",
             command=get_info).pack()
         tk.Button(self, text="Home Page",
             command= lambda: parent.replace_frame(HomePage)).pack()
+
+
+class UpdateSpending(tk.Frame):
+    def __init__(self, parent):
+        tk.Frame.__init__(self, parent)
+        tk.Label(self, text="Update Spending for Budget Items").pack()
+        self.spent = tk.Entry(self)
+        self.spent.pack()
+        self.spent.pack_forget()
+        id = get_user_id(CURRENT_USER.username)
+        items = show_budget_items(id)
+
+        def get_spent(item):
+            just_spent = float(self.spent.get())
+            total_spent = just_spent + get_already_spent(item)
+            update_spending_budget_item(total_spent, item)
+            return parent.replace_frame(HomePage)
+
+        def get_item(item):
+            tk.Label(text=f'How much did you spend on {item[0]} today?')
+            self.spent.pack()
+            tk.Button(self, text="submit", command = lambda: get_spent(item[0])).pack()
+        
+        for item in items:  
+            button = tk.Button(self, text=f'{item}', command= lambda: get_item(item)).pack() 
+
+        tk.Button(self, text="Home", command=lambda: parent.replace_frame(HomePage)).pack()
+
 
 
 if __name__ == '__main__':
