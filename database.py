@@ -5,7 +5,7 @@ Handles most of all the database logic for the gui to use
 import sqlite3
 from models import User, MoneyAmount, BudgetItem
 
-conn = sqlite3.connect(':memory:')
+conn = sqlite3.connect('database.db')
 c = conn.cursor()
     
 c.execute('''CREATE TABLE IF NOT EXISTS users (
@@ -66,6 +66,7 @@ def get_user_id(username):
     c.execute("SELECT * FROM users where username=:username", {"username": username})
     get_id = c.fetchall()
     id = [info[0] for info in get_id]
+    print(id)
     return id[0]
 
 
@@ -108,7 +109,7 @@ def show_budget_items(id):
 
 def update_spending_budget_item(spent, item):
     with conn:
-        c.execute("UPDATE items set spent = ? where item = ?",(spent, item))
+        c.execute("UPDATE items set spent = ? where item = ?", (spent, item))
     c.execute("SELECT * FROM items where item=:item", {'item':item})
     check = c.fetchall()
     print(check)
@@ -123,3 +124,11 @@ def get_already_spent(item):
     c.execute("SELECT * FROM items where item=:item", {'item':item})
     check = c.fetchone()
     return check[3]
+
+def percentages_for_pie_chart(id):
+    c.execute("SELECT * FROM moneyAmount where user_id=:user_id", {'user_id':id})
+    savings = c.fetchone()
+    c.execute("SELECT * FROM items where user_id=:user_id", {'user_id':id})
+    item_percents = c.fetchall()
+    return savings, item_percents
+  

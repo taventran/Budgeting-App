@@ -3,10 +3,11 @@ Budgeting app that shows how much a user can spend based on what percentage
 of their paycheck they allocate to that sector
 '''
 import tkinter as tk
+from graphs import display_pie_chart
 from models import User, MoneyAmount, BudgetItem
-from functools import partial
 from database import create_user, show_budget_items, update_spending_budget_item, get_already_spent
 from database import verify_login, get_user_id, get_amount_of_money, display_money, get_budget_item, show_budget_items
+
 
 # Set current user to none and changes it once a valid login occurs
 CURRENT_USER = None
@@ -56,7 +57,6 @@ class LoginPage(tk.Frame):
         tk.Button(self, text="New User", 
             command=lambda: parent.replace_frame(RegisterPage), font=("cambria", 15)).pack(pady=10)
 
-
 class RegisterPage(tk.Frame):
     def __init__(self, parent):
         tk.Frame.__init__(self, parent)
@@ -91,6 +91,7 @@ class HomePage(tk.Frame):
         tk.Label(self, text=f"{CURRENT_USER.username} welcome!", font=("Cambria", 15)).pack(pady=10)
         id = get_user_id(CURRENT_USER.username)
         info = display_money(id)
+        display_pie_chart(id, window)
 
         if len(info) > 0:
             monthly_allowance = [allowance[0] for allowance in info]
@@ -114,7 +115,7 @@ class MonthlyAllowancePage(tk.Frame):
     '''Gets how much user will make that month, and the percentage amount they want to save. '''
     def __init__(self, parent):
         tk.Frame.__init__(self, parent)
-        tk.Label(text= "Updating monthly allowance will delete all of your budget items for this month!")
+        tk.Label(text= "Updating monthly allowance will delete all of your budget items for this month, and how much you spent!").pack()
         tk.Label(self, text="Put monthly paycheck and savings", font=("Cambria", 26)).pack(pady=10)
         self.monthlyPay = tk.Entry(self, font=("Cambria", 12))
         self.monthlyPay.insert(0, 'Monthly Paycheck')
@@ -196,9 +197,12 @@ class UpdateSpending(tk.Frame):
             tk.Button(self, text="submit", command = lambda: get_spent(item[0])).pack()
         
         for item in items:  
-            button = tk.Button(self, text=f'{item}', command= lambda: get_item(item)).pack() 
+            button = tk.Button(self, text=f'{item}', command= get_item(item)).pack() 
 
         tk.Button(self, text="Home", command=lambda: parent.replace_frame(HomePage)).pack()
+
+class Chart(tk.Frame):
+    pass
 
 
 
