@@ -24,21 +24,21 @@ class BuildPage(tk.Tk):
         if self._frame is not None:
             self._frame.destroy()
         self._frame = new_frame
-        self._frame.pack()
+        self._frame.grid()
 
 class LoginPage(tk.Frame):
     def __init__(self, parent):
         tk.Frame.__init__(self, parent)
-        tk.Label(self, text='Login', font=("Cambria", 26)).pack(pady=10)
+        tk.Label(self, text='Login', font=("Cambria", 26)).grid(row=1, column=1)
         self.username = tk.Entry(self, font=("Cambria", 12))
         self.username.insert(0, 'Username')
-        self.username.pack(pady=10)
+        self.username.grid(row=2, column=1)
         self.password = tk.Entry(self, font=("Cambria", 12))
         self.password.insert(0, 'Password')
-        self.password.pack(pady=10)
+        self.password.grid(row=3, column=1)
         self.invalid = tk.Label(self, text="Information not valid", font=("Cambria", 12))
-        self.invalid.pack()
-        self.invalid.pack_forget()
+        self.invalid.grid(row=4, column=1)
+        self.invalid.grid_remove()
 
         def get_user():
             username = self.username.get()
@@ -50,12 +50,12 @@ class LoginPage(tk.Frame):
             if value == True:
                 return parent.replace_frame(HomePage)
             else: 
-                self.invalid.pack()
+                self.invalid.grid(row=5, column=1)
   
         tk.Button(self, text="Login", 
-            command=get_user, font=("cambria", 15)).pack(pady=10)
+            command=get_user, font=("cambria", 15)).grid(row=6, column=1)
         tk.Button(self, text="New User", 
-            command=lambda: parent.replace_frame(RegisterPage), font=("cambria", 15)).pack(pady=10)
+            command=lambda: parent.replace_frame(RegisterPage), font=("cambria", 15)).grid(row=7, column=1)
 
 class RegisterPage(tk.Frame):
     def __init__(self, parent):
@@ -87,28 +87,28 @@ class RegisterPage(tk.Frame):
 class HomePage(tk.Frame):
     def __init__(self, parent):
         tk.Frame.__init__(self, parent)
-        tk.Label(self, text="Home Page", font=("Cambria", 26)).pack(pady=10)
-        tk.Label(self, text=f"{CURRENT_USER.username} welcome!", font=("Cambria", 15)).pack(pady=10)
+        tk.Label(self, text="Home Page", font=("Cambria", 26)).grid(row=1, column=10)
+        tk.Label(self, text=f"{CURRENT_USER.username} welcome!", font=("Cambria", 15)).grid(row=2, column=10)
         id = get_user_id(CURRENT_USER.username)
         info = display_money(id)
-        display_pie_chart(id, window)
 
         if len(info) > 0:
             monthly_allowance = [allowance[0] for allowance in info]
             savings = [save[1] for save in info]
             savings_in_dollars = [dollar_amount[2] for dollar_amount in info]
-            information = tk.Label(self, text=f"Monthly Paycheck {monthly_allowance[0]:.2f}").pack(padx=10, pady=10)
-            information2 = tk.Label(self, text=f"Saving {savings[0]}% this month").pack(pady=10)
-            information3 = tk.Label(self, text=f"Saving {savings_in_dollars[0]:.2f}$ this month").pack(pady=10)
+            information = tk.Label(self, text=f"Monthly Paycheck {monthly_allowance[0]:.2f}").grid(row=3, column=10)
+            information2 = tk.Label(self, text=f"Saving {savings[0]}% this month").grid(row=3, column=10)
+            information3 = tk.Label(self, text=f"Saving {savings_in_dollars[0]:.2f}$ this month").grid(row=4, column=10)
+            display_pie_chart(id, window)
             tk.Button(self, text="Budget Item", font=("Cambria", 15),
-                command=lambda: parent.replace_frame(BudgetItemPage)).pack(pady=10)
+                command=lambda: parent.replace_frame(BudgetItemPage)).grid(row=5, column=10)
             tk.Button(self, text="Update Item Spending", font=("Cambria", 15),
-                command=lambda: parent.replace_frame(UpdateSpending)).pack(pady=10)
+                command=lambda: parent.replace_frame(UpdateSpending)).grid(row=6, column=10)
 
         tk.Button(self, text="Monthly Paycheck", font=("Cambria", 15),
-            command=lambda: parent.replace_frame(MonthlyAllowancePage)).pack(pady=10)
+            command=lambda: parent.replace_frame(MonthlyAllowancePage)).grid(row=7, column=10)
         tk.Button(self, text="Signout", font=("Cambria", 15),
-            command=lambda: parent.replace_frame(LoginPage)).pack(pady=10)
+            command=lambda: parent.replace_frame(LoginPage)).grid(row=8, column=10)
     
 
 class MonthlyAllowancePage(tk.Frame):
@@ -116,7 +116,7 @@ class MonthlyAllowancePage(tk.Frame):
     def __init__(self, parent):
         tk.Frame.__init__(self, parent)
         tk.Label(text= "Updating monthly allowance will delete all of your budget items for this month, and how much you spent!").pack()
-        tk.Label(self, text="Put monthly paycheck and savings", font=("Cambria", 26)).pack(pady=10)
+        tk.Label(self, text="Put monthly paycheck and savings", font=("Cambria", 26)).grid(pady=10)
         self.monthlyPay = tk.Entry(self, font=("Cambria", 12))
         self.monthlyPay.insert(0, 'Monthly Paycheck')
         self.monthlyPay.pack(pady=10)
@@ -209,6 +209,8 @@ class Chart(tk.Frame):
 if __name__ == '__main__':
     window = BuildPage()
     window.geometry("750x500")
+    window.grid_rowconfigure(0, weight=1)
+    window.grid_columnconfigure(0, weight=1)
     window.config(bg="lightblue")
     window.title("Budgeting App")
     window.mainloop()

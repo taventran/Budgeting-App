@@ -3,11 +3,8 @@ from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 from database import percentages_for_pie_chart
 
-def display_pie_chart(id):
-
-    plt.style.use('fivethirtyeight')
+def display_pie_chart(id, window):
     saving, item_percents = percentages_for_pie_chart(id)
-    print(saving, item_percents)
     item_percentages = [saving[1]]
     labels = ['Savings']
     for item in item_percents:
@@ -20,10 +17,9 @@ def display_pie_chart(id):
         unassigned = 100 - empty
         item_percentages.append(unassigned)
         labels.append('Unassigned')
-    plt.title("Budget Percentage Plan for the month")
-    plt.pie(item_percentages, labels=labels, wedgeprops={'edgecolor': 'black'}, 
+    fig = Figure(figsize=(5,5), dpi = 100)
+    plot1 = fig.add_subplot(111)
+    plot1.pie(item_percentages, labels=labels, wedgeprops={'edgecolor': 'black'}, 
         shadow=True, autopct='%1.1f%%')
-
-    plt.show()
-
-display_pie_chart(1)
+    canvas = FigureCanvasTkAgg( fig, master = window)
+    canvas.get_tk_widget().grid(row=0, column=0, columnspan=2, rowspan=2)
