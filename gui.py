@@ -232,32 +232,83 @@ class Charts(tk.Frame):
             shadow=True, autopct='%1.1f%%')
 
         
-        canvas = FigureCanvasTkAgg(fig, master = window)
-        toolbar = NavigationToolbar2Tk(canvas, window, pack_toolbar=False)
-        toolbar.update()
-        canvas.get_tk_widget().grid(row=0, column=1, sticky='nswe')
-        toolbar.grid(row=1, column=1)
+        self.canvas = FigureCanvasTkAgg(fig, master = window)
+        self.toolbar = NavigationToolbar2Tk(self.canvas, window, pack_toolbar=False)
+        self.toolbar.update()
+        self.canvas.get_tk_widget().grid(row=0, column=1, sticky='nswe')
+        self.toolbar.grid(row=1, column=1)
 
+        def percent_budget_graph():
+            '''Create Percent Budget Graph'''
+            self.canvas.get_tk_widget().grid_remove()
+            self.toolbar.grid_remove()
+            saving, item_percents = percentages_for_pie_chart(id)
+            item_percentages = [saving[1]]
+            labels = ['Savings']
+            for item in item_percents:
+                item_percentages.append(item[1])
+                labels.append(item[0])
+            empty = 0
+            for item in item_percentages:
+                empty += item
+            if empty != 100:
+                unassigned = 100 - empty
+                item_percentages.append(unassigned)
+                labels.append('Unassigned')
+            fig = Figure(figsize=(5,5), dpi = 100)
+            plot1 = fig.add_subplot(111)
+            plot1.pie(item_percentages, labels=labels, wedgeprops={'edgecolor': 'black'}, 
+                shadow=True, autopct='%1.1f%%')
+            
+            self.canvas = FigureCanvasTkAgg(fig, master = window)
+            self.toolbar = NavigationToolbar2Tk(self.canvas, window, pack_toolbar=False)
+            self.toolbar.update()
+            self.canvas.get_tk_widget().grid(row=0, column=1, sticky='nswe')
+            self.toolbar.grid(row=1, column=1)
 
         def clear_page():
             '''Get rid of graph and changes the page'''
-            canvas.get_tk_widget().grid_remove()
-            toolbar.grid_remove()
+            self.canvas.get_tk_widget().grid_remove()
+            self.toolbar.grid_remove()
             return parent.replace_frame(HomePage)
 
         def spending_graph():
-            pass
+            '''How much has the user spent and how much left they have to spend'''
+            self.canvas.get_tk_widget().grid_remove()
+            self.toolbar.grid_remove()
+            # TODO make spending graph
+            saving, item_percents = percentages_for_pie_chart(id)
+            item_percentages = [saving[1]]
+            labels = ['Savings']
+            for item in item_percents:
+                item_percentages.append(item[1])
+                labels.append(item[0])
+            empty = 0
+            for item in item_percentages:
+                empty += item
+            if empty != 100:
+                unassigned = 100 - empty
+                item_percentages.append(unassigned)
+                labels.append('Unassigned')
+            fig = Figure(figsize=(5,5), dpi = 100)
+            plot1 = fig.add_subplot(111)
+            plot1.pie(item_percentages, labels=labels, wedgeprops={'edgecolor': 'black'}, )
+
+            self.canvas = FigureCanvasTkAgg(fig, master = window)
+            self.toolbar = NavigationToolbar2Tk(self.canvas, window, pack_toolbar=False)
+            self.toolbar.update()
+            self.canvas.get_tk_widget().grid(row=0, column=1, sticky='nswe')
+            self.toolbar.grid(row=1, column=1)       
+
+        tk.Button(self, text="percent budget graph", 
+            command=percent_budget_graph).grid(row=3, column=1)
 
         tk.Button(self, text="Left To Spend", 
-            command=spending_graph).grid(row=3, column=1)
+            command=spending_graph).grid(row=4, column=1)
 
         tk.Button(self, text="Home Page",
-            command=clear_page).grid(row=3, column=1)
+            command=clear_page).grid(row=5, column=1)
     
-
-
-
-
 
 if __name__ == '__main__':
     window = BuildPage()

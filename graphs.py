@@ -29,6 +29,10 @@ def display_pie_chart(id, window):
     toolbar.update()
     canvas.get_tk_widget().grid()
     toolbar.grid()
+
+    def clear_graph():
+        canvas.get_tk_widget().grid_remove()
+        toolbar.grid_remove()
     
 
 
