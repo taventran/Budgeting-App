@@ -7,7 +7,11 @@ from graphs import display_pie_chart
 from models import User, MoneyAmount, BudgetItem
 from database import create_user, show_budget_items, update_spending_budget_item, get_already_spent
 from database import verify_login, get_user_id, get_amount_of_money, display_money, get_budget_item, show_budget_items
-
+from  matplotlib import pyplot as plt
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
+import tkinter as tk
+from database import percentages_for_pie_chart
 
 # Set current user to none and changes it once a valid login occurs
 CURRENT_USER = None
@@ -87,8 +91,8 @@ class RegisterPage(tk.Frame):
 class HomePage(tk.Frame):
     def __init__(self, parent):
         tk.Frame.__init__(self, parent)
-        tk.Label(self, text="Home Page", font=("Cambria", 26)).grid(row=1, column=10)
-        tk.Label(self, text=f"{CURRENT_USER.username} welcome!", font=("Cambria", 15)).grid(row=2, column=10)
+        tk.Label(self, text="Home Page", font=("Cambria", 26)).grid(row=0, column=1)
+        tk.Label(self, text=f"{CURRENT_USER.username} welcome!", font=("Cambria", 15)).grid(row=1, column=1)
         id = get_user_id(CURRENT_USER.username)
         info = display_money(id)
 
@@ -96,40 +100,41 @@ class HomePage(tk.Frame):
             monthly_allowance = [allowance[0] for allowance in info]
             savings = [save[1] for save in info]
             savings_in_dollars = [dollar_amount[2] for dollar_amount in info]
-            information = tk.Label(self, text=f"Monthly Paycheck {monthly_allowance[0]:.2f}").grid(row=3, column=10)
-            information2 = tk.Label(self, text=f"Saving {savings[0]}% this month").grid(row=3, column=10)
-            information3 = tk.Label(self, text=f"Saving {savings_in_dollars[0]:.2f}$ this month").grid(row=4, column=10)
-            display_pie_chart(id, window)
-            tk.Button(self, text="Budget Item", font=("Cambria", 15),
-                command=lambda: parent.replace_frame(BudgetItemPage)).grid(row=5, column=10)
-            tk.Button(self, text="Update Item Spending", font=("Cambria", 15),
-                command=lambda: parent.replace_frame(UpdateSpending)).grid(row=6, column=10)
+            information = tk.Label(self, text=f"Monthly Paycheck {monthly_allowance[0]:.2f}").grid(row=3, column=1)
+            information3 = tk.Label(self, text=f"Saving {savings_in_dollars[0]:.2f}$ this month").grid(row=5, column=1)
 
+            tk.Button(self, text="Budget Item", font=("Cambria", 15),
+                command=lambda: parent.replace_frame(BudgetItemPage)).grid(row=6, column=1)
+            tk.Button(self, text="Update Item Spending", font=("Cambria", 15),
+                command=lambda: parent.replace_frame(UpdateSpending)).grid(row=7, column=1)
+
+        tk.Button(self, text="Graphs", font=("Cambria", 15),
+            command=lambda: parent.replace_frame(Charts)).grid(row=8, column=1)
         tk.Button(self, text="Monthly Paycheck", font=("Cambria", 15),
-            command=lambda: parent.replace_frame(MonthlyAllowancePage)).grid(row=7, column=10)
+            command=lambda: parent.replace_frame(MonthlyAllowancePage)).grid(row=9, column=1)
         tk.Button(self, text="Signout", font=("Cambria", 15),
-            command=lambda: parent.replace_frame(LoginPage)).grid(row=8, column=10)
+            command=lambda: parent.replace_frame(LoginPage)).grid(row=10, column=1)
+        
     
 
 class MonthlyAllowancePage(tk.Frame):
     '''Gets how much user will make that month, and the percentage amount they want to save. '''
     def __init__(self, parent):
         tk.Frame.__init__(self, parent)
-        tk.Label(text= "Updating monthly allowance will delete all of your budget items for this month, and how much you spent!").pack()
         tk.Label(self, text="Put monthly paycheck and savings", font=("Cambria", 26)).grid(pady=10)
         self.monthlyPay = tk.Entry(self, font=("Cambria", 12))
         self.monthlyPay.insert(0, 'Monthly Paycheck')
-        self.monthlyPay.pack(pady=10)
+        self.monthlyPay.grid()
         self.savings = tk.Entry(self, font=("Cambria", 12))
         self.savings.insert(0, 'Percent you want to save')
-        self.savings.pack(pady=10)
+        self.savings.grid()
         self.error = tk.Label(self, text="Monthly pay needs to be a number and savings need to be a positive whole number!", font=("Cambria", 12))
         def get_info():
             try:
                 monthlyPay = float(self.monthlyPay.get())   
                 savings = int(self.savings.get())
                 if (savings < 0) or (savings > 100):
-                    tk.Label(self, text="Savings needs to be a whole number between 0 and 100").pack()
+                    tk.Label(self, text="Savings needs to be a whole number between 0 and 100").grid(pady=10)
                 else:
                     money = MoneyAmount(monthlyPay, savings, CURRENT_USER.username)
                     id = get_user_id(money.user)
@@ -138,12 +143,13 @@ class MonthlyAllowancePage(tk.Frame):
                     self.error.destroy()
                     return parent.replace_frame(HomePage)
             except ValueError:
-                self.error.pack(pady=10)
+                self.error.grid()
 
         tk.Label(text="Invalid Entry")
-        tk.Button(self, text="Submit", command=get_info, font=("Cambria", 15)).pack(pady=10)
+        tk.Button(self, text="Submit", command=get_info, font=("Cambria", 15)).grid()
         tk.Button(self, text="Home Page", font=("Cambria", 15),
-            command=lambda: parent.replace_frame(HomePage)).pack(pady=10)
+            command=lambda: parent.replace_frame(HomePage)).grid()
+
 
 
 class BudgetItemPage(tk.Frame):
@@ -163,8 +169,7 @@ class BudgetItemPage(tk.Frame):
         def get_info():
             item = self.item.get()
             percent = self.percent.get()
-            allowed_to_spend = monthly_allowance[0] * (int(percent)/100)
-            budget_class = BudgetItem(item, percent, allowed_to_spend)
+            budget_class = BudgetItem(item, percent)
             get_budget_item(budget_class, id)
             return parent.replace_frame(HomePage)
 
@@ -201,8 +206,56 @@ class UpdateSpending(tk.Frame):
 
         tk.Button(self, text="Home", command=lambda: parent.replace_frame(HomePage)).pack()
 
-class Chart(tk.Frame):
-    pass
+class Charts(tk.Frame):
+    def __init__(self, parent):
+        tk.Frame.__init__(self, parent)
+
+        tk.Label(self, text="Graphs and Charts of your Spending").grid(row=1, column=1)
+        id = get_user_id(CURRENT_USER.username)
+        '''Create Percent Budget Graph'''
+        saving, item_percents = percentages_for_pie_chart(id)
+        item_percentages = [saving[1]]
+        labels = ['Savings']
+        for item in item_percents:
+            item_percentages.append(item[1])
+            labels.append(item[0])
+        empty = 0
+        for item in item_percentages:
+            empty += item
+        if empty != 100:
+            unassigned = 100 - empty
+            item_percentages.append(unassigned)
+            labels.append('Unassigned')
+        fig = Figure(figsize=(5,5), dpi = 100)
+        plot1 = fig.add_subplot(111)
+        plot1.pie(item_percentages, labels=labels, wedgeprops={'edgecolor': 'black'}, 
+            shadow=True, autopct='%1.1f%%')
+
+        
+        canvas = FigureCanvasTkAgg(fig, master = window)
+        toolbar = NavigationToolbar2Tk(canvas, window, pack_toolbar=False)
+        toolbar.update()
+        canvas.get_tk_widget().grid(row=0, column=1, sticky='nswe')
+        toolbar.grid(row=1, column=1)
+
+
+        def clear_page():
+            '''Get rid of graph and changes the page'''
+            canvas.get_tk_widget().grid_remove()
+            toolbar.grid_remove()
+            return parent.replace_frame(HomePage)
+
+        def spending_graph():
+            pass
+
+        tk.Button(self, text="Left To Spend", 
+            command=spending_graph).grid(row=3, column=1)
+
+        tk.Button(self, text="Home Page",
+            command=clear_page).grid(row=3, column=1)
+    
+
+
 
 
 

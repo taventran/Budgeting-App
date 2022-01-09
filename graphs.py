@@ -1,6 +1,7 @@
 from  matplotlib import pyplot as plt
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
+import tkinter as tk
 from database import percentages_for_pie_chart
 
 def display_pie_chart(id, window):
@@ -21,5 +22,14 @@ def display_pie_chart(id, window):
     plot1 = fig.add_subplot(111)
     plot1.pie(item_percentages, labels=labels, wedgeprops={'edgecolor': 'black'}, 
         shadow=True, autopct='%1.1f%%')
-    canvas = FigureCanvasTkAgg( fig, master = window)
-    canvas.get_tk_widget().grid(row=0, column=0, columnspan=2, rowspan=2)
+
+    
+    canvas = FigureCanvasTkAgg(fig, master = window)
+    toolbar = NavigationToolbar2Tk(canvas, window, pack_toolbar=False)
+    toolbar.update()
+    canvas.get_tk_widget().grid()
+    toolbar.grid()
+    
+
+
+

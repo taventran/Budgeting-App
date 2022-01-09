@@ -25,7 +25,6 @@ c.execute('''CREATE TABLE IF NOT EXISTS moneyAmount (
 c.execute('''CREATE TABLE IF NOT EXISTS items (
             item TEXT,
             percent INTEGER,
-            allowed_to_spend REAL,
             spent REAL,
             user_id INTEGER,
             FOREIGN KEY(user_id) REFERENCES USER(ID)
@@ -70,10 +69,14 @@ def get_user_id(username):
     return id[0]
 
 
-def get_amount_of_money(MoneyAmount, id):    
+def get_amount_of_money(MoneyAmount, id):
+    money = 0    
     with conn:
         c.execute("SELECT * FROM moneyAmount where user_id=:user_id", {'user_id':id})
         check = c.fetchall()
+        print(check)
+        money = check[0]
+        print(money)
         if len(check) == 1:
             c.execute("DELETE From moneyAmount where user_id=:user_id", {'user_id':id})
             c.execute("INSERT INTO moneyAmount('monthlyAmount', 'savings', 'savings_dollar_amount', 'user_id') VALUES (?, ?, ?, ?)",
@@ -82,10 +85,12 @@ def get_amount_of_money(MoneyAmount, id):
             c.execute("INSERT INTO moneyAmount('monthlyAmount', 'savings', 'savings_dollar_amount', 'user_id') VALUES (?, ?, ?, ?)",
                 (MoneyAmount.monthly_check, MoneyAmount.savings, MoneyAmount.savings_dollar_amount, id))
     with conn:
-        c.execute("SELECT *FROM items where user_id=:user_id", {'user_id':id})
+        c.execute("SELECT * FROM items where user_id=:user_id", {'user_id':id})
         check = c.fetchall()
-        if len(check) >= 1:
-            c.execute("DELETE FROM items where user_id=:user_id", {'user_id':id})
+        for item in check:
+            pass
+            
+
 
 def display_money(id):
     with conn:
@@ -103,7 +108,6 @@ def get_budget_item(BudgetItem, id):
 def show_budget_items(id):
     c.execute("SELECT * FROM items where user_id=:user_id", {'user_id':id})
     check = c.fetchall()
-    print(check)
     return check
 
 
