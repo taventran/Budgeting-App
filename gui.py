@@ -7,7 +7,6 @@ from graphs import display_pie_chart
 from models import User, MoneyAmount, BudgetItem
 from database import create_user, show_budget_items, update_spending_budget_item, get_already_spent
 from database import verify_login, get_user_id, get_amount_of_money, display_money, get_budget_item, show_budget_items
-from  matplotlib import pyplot as plt
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 import tkinter as tk
@@ -183,28 +182,32 @@ class BudgetItemPage(tk.Frame):
 class UpdateSpending(tk.Frame):
     def __init__(self, parent):
         tk.Frame.__init__(self, parent)
-        tk.Label(self, text="Update Spending for Budget Items").pack()
+        tk.Label(self, text="Update Spending for Budget Items").grid()
         self.spent = tk.Entry(self)
-        self.spent.pack()
-        self.spent.pack_forget()
+        self.spent.grid()
+        self.spent.grid_remove()
         id = get_user_id(CURRENT_USER.username)
         items = show_budget_items(id)
-
+        self.error = tk.Label(self, text="Needs to be a number!")
         def get_spent(item):
-            just_spent = float(self.spent.get())
-            total_spent = just_spent + get_already_spent(item)
-            update_spending_budget_item(total_spent, item)
-            return parent.replace_frame(HomePage)
+            try:
+                just_spent = float(self.spent.get())
+                total_spent = just_spent + get_already_spent(item)
+                update_spending_budget_item(total_spent, item)
+                self.error.destroy()
+                return parent.replace_frame(HomePage)
+            except ValueError:
+                self.error.grid()
 
         def get_item(item):
             tk.Label(text=f'How much did you spend on {item[0]} today?')
-            self.spent.pack()
-            tk.Button(self, text="submit", command = lambda: get_spent(item[0])).pack()
+            self.spent.grid()
+            tk.Button(self, text="submit", command = lambda: get_spent(item[0])).grid()
         
         for item in items:  
-            button = tk.Button(self, text=f'{item}', command= get_item(item)).pack() 
+            button = tk.Button(self, text=f'{item}', command= get_item(item)).grid()
 
-        tk.Button(self, text="Home", command=lambda: parent.replace_frame(HomePage)).pack()
+        tk.Button(self, text="Home", command=lambda: parent.replace_frame(HomePage)).grid()
 
 class Charts(tk.Frame):
     def __init__(self, parent):

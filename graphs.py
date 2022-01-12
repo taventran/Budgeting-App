@@ -2,7 +2,7 @@ from  matplotlib import pyplot as plt
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 import tkinter as tk
-from database import percentages_for_pie_chart
+from database import info_for_spending_bar_chart, percentages_for_pie_chart
 
 def display_pie_chart(id, window):
     saving, item_percents = percentages_for_pie_chart(id)
@@ -35,5 +35,22 @@ def display_pie_chart(id, window):
         toolbar.grid_remove()
     
 
+def spending_chart(id):
+    plt.style.use("fivethirtyeight")
+    total_amount, item_info = info_for_spending_bar_chart(id)
 
+    items = []
+    spent_on_item = []
 
+    for item in item_info:
+        items.append(item[0])
+        spent_on_item.append(item[2])
+
+    
+    plt.title("Spent on items")
+    plt.ylim(0, total_amount[0])
+    plt.bar(items, spent_on_item)
+    plt.show()
+
+spending_chart(1)
+    

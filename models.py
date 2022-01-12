@@ -26,10 +26,9 @@ class MoneyAmount():
 
 
 class BudgetItem():
-    def __init__(self, item, percentages, allowed_to_spend, amount_spent=0):
+    def __init__(self, item, percentages, amount_spent=0):
         self.item = item
         self.percentages = percentages
-        self.allowed_to_spend = allowed_to_spend
         self.amount_spent = amount_spent
 
 

@@ -1,9 +1,7 @@
 '''
-Handles most of all the database logic for the gui to use
+Handles most of the database logic for the application
 '''
-
 import sqlite3
-from models import User, MoneyAmount, BudgetItem
 
 conn = sqlite3.connect('database.db')
 c = conn.cursor()
@@ -74,9 +72,6 @@ def get_amount_of_money(MoneyAmount, id):
     with conn:
         c.execute("SELECT * FROM moneyAmount where user_id=:user_id", {'user_id':id})
         check = c.fetchall()
-        print(check)
-        money = check[0]
-        print(money)
         if len(check) == 1:
             c.execute("DELETE From moneyAmount where user_id=:user_id", {'user_id':id})
             c.execute("INSERT INTO moneyAmount('monthlyAmount', 'savings', 'savings_dollar_amount', 'user_id') VALUES (?, ?, ?, ?)",
@@ -101,8 +96,8 @@ def display_money(id):
 
 def get_budget_item(BudgetItem, id):
     with conn:
-        c.execute("INSERT INTO items('item', 'percent', 'allowed_to_spend', 'spent', 'user_id') VALUES (?, ?, ?, ?, ?)",
-                    (BudgetItem.item, BudgetItem.percentages, BudgetItem.allowed_to_spend, BudgetItem.amount_spent, id))
+        c.execute("INSERT INTO items('item', 'percent', 'spent', 'user_id') VALUES (?, ?, ?, ?)",
+                    (BudgetItem.item, BudgetItem.percentages, BudgetItem.amount_spent, id))
 
 
 def show_budget_items(id):
@@ -135,4 +130,14 @@ def percentages_for_pie_chart(id):
     c.execute("SELECT * FROM items where user_id=:user_id", {'user_id':id})
     item_percents = c.fetchall()
     return savings, item_percents
+
+def info_for_spending_bar_chart(id):
+    with conn:
+        c.execute("SELECT * FROM moneyAmount where user_id=:user_id", {'user_id':id})
+        total_amount_to_spend = c.fetchone()
+        c.execute("SELECT * FROM items where user_id=:user_id", {'user_id':id})
+        spent_on_items = c.fetchall()
+        print(spent_on_items)
+    return total_amount_to_spend, spent_on_items
+
   
