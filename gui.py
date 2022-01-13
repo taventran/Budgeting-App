@@ -3,9 +3,10 @@ Budgeting app that shows how much a user can spend based on what percentage
 of their paycheck they allocate to that sector
 '''
 import tkinter as tk
+from tkinter.constants import BOTTOM
 from graphs import display_pie_chart
 from models import User, MoneyAmount, BudgetItem
-from database import create_user, show_budget_items, update_spending_budget_item, get_already_spent
+from database import create_user, show_budget_items, update_spending_budget_item, get_already_spent, info_for_spending_bar_chart
 from database import verify_login, get_user_id, get_amount_of_money, display_money, get_budget_item, show_budget_items
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
@@ -14,6 +15,16 @@ from database import percentages_for_pie_chart
 
 # Set current user to none and changes it once a valid login occurs
 CURRENT_USER = None
+
+LARGE_TEXT_FONT = ("Cambria", 50)
+MEDIUM_TEXT_FONT = ("Cambria", 20)
+BUTTON_FONT = ("Cambria", 15)
+ENTRY_BOXES_WIDTH = 30
+
+
+HOME_BUTTON_WIDTH = 40
+REGISTER_BUTTON_WIDTH = 25
+
 
 class BuildPage(tk.Tk):
     def __init__(self):
@@ -27,21 +38,22 @@ class BuildPage(tk.Tk):
         if self._frame is not None:
             self._frame.destroy()
         self._frame = new_frame
-        self._frame.grid()
+        self._frame.pack()
 
 class LoginPage(tk.Frame):
     def __init__(self, parent):
         tk.Frame.__init__(self, parent)
-        tk.Label(self, text='Login', font=("Cambria", 26)).grid(row=1, column=1)
-        self.username = tk.Entry(self, font=("Cambria", 12))
+        tk.Frame.config(self, bg='lightblue')
+        tk.Label(self, text='Login', font=("Cambria", 26), bg='lightblue').pack(pady=5)
+        self.username = tk.Entry(self, font=MEDIUM_TEXT_FONT, width=ENTRY_BOXES_WIDTH)
         self.username.insert(0, 'Username')
-        self.username.grid(row=2, column=1)
-        self.password = tk.Entry(self, font=("Cambria", 12))
+        self.username.pack(pady=2)
+        self.password = tk.Entry(self, font=MEDIUM_TEXT_FONT, width=ENTRY_BOXES_WIDTH)
         self.password.insert(0, 'Password')
-        self.password.grid(row=3, column=1)
+        self.password.pack(pady=2)
         self.invalid = tk.Label(self, text="Information not valid", font=("Cambria", 12))
-        self.invalid.grid(row=4, column=1)
-        self.invalid.grid_remove()
+        self.invalid.pack(pady=5)
+        self.invalid.pack_forget()
 
         def get_user():
             username = self.username.get()
@@ -53,16 +65,17 @@ class LoginPage(tk.Frame):
             if value == True:
                 return parent.replace_frame(HomePage)
             else: 
-                self.invalid.grid(row=5, column=1)
+                self.invalid.pack()
   
-        tk.Button(self, text="Login", 
-            command=get_user, font=("cambria", 15)).grid(row=6, column=1)
-        tk.Button(self, text="New User", 
-            command=lambda: parent.replace_frame(RegisterPage), font=("cambria", 15)).grid(row=7, column=1)
+        tk.Button(self, text="Login", width=REGISTER_BUTTON_WIDTH,
+            command=get_user, font=("cambria", 15)).pack(pady=5)
+        tk.Button(self, text="New User", width=REGISTER_BUTTON_WIDTH,
+            command=lambda: parent.replace_frame(RegisterPage), font=("cambria", 15)).pack(pady=5)
 
 class RegisterPage(tk.Frame):
     def __init__(self, parent):
         tk.Frame.__init__(self, parent)
+        tk.Frame.config(self, bg='lightblue')
         tk.Label(self, text="Register page", font=("Cambria", 26)).pack()
         self.password = tk.Entry(self, font=("Cambria", 12))
         self.user = tk.Entry(self, font=("Cambria", 12))
@@ -84,14 +97,18 @@ class RegisterPage(tk.Frame):
             else:
                 self.invalid.pack()
 
-        tk.Button(self, text="Submit", command=get_info, font=("Cambria", 12)).pack()
+        tk.Button(self, text="Submit", command=get_info, width=REGISTER_BUTTON_WIDTH,
+            font=("Cambria", 12)).pack()
+        tk.Button(self, text="Login Page", width=REGISTER_BUTTON_WIDTH,
+            command=lambda: parent.replace_frame(LoginPage), font=("Cambria", 12)).pack()
         
 
 class HomePage(tk.Frame):
     def __init__(self, parent):
         tk.Frame.__init__(self, parent)
-        tk.Label(self, text="Home Page", font=("Cambria", 26)).grid(row=0, column=1)
-        tk.Label(self, text=f"{CURRENT_USER.username} welcome!", font=("Cambria", 15)).grid(row=1, column=1)
+        tk.Frame.config(self, bg='lightblue')
+        tk.Label(self, text="Home Page", font=LARGE_TEXT_FONT, bg='lightblue').pack()
+        tk.Label(self, text=f"{CURRENT_USER.username} welcome!", font=LARGE_TEXT_FONT, bg='lightblue').pack()
         id = get_user_id(CURRENT_USER.username)
         info = display_money(id)
 
@@ -99,20 +116,20 @@ class HomePage(tk.Frame):
             monthly_allowance = [allowance[0] for allowance in info]
             savings = [save[1] for save in info]
             savings_in_dollars = [dollar_amount[2] for dollar_amount in info]
-            information = tk.Label(self, text=f"Monthly Paycheck {monthly_allowance[0]:.2f}").grid(row=3, column=1)
-            information3 = tk.Label(self, text=f"Saving {savings_in_dollars[0]:.2f}$ this month").grid(row=5, column=1)
+            information = tk.Label(self, text=f"Monthly Paycheck {monthly_allowance[0]:.2f}", bg='lightblue', font=MEDIUM_TEXT_FONT).pack()
+            information3 = tk.Label(self, text=f"Saving {savings_in_dollars[0]:.2f}$ this month", bg='lightblue', font=MEDIUM_TEXT_FONT).pack()
 
-            tk.Button(self, text="Budget Item", font=("Cambria", 15),
-                command=lambda: parent.replace_frame(BudgetItemPage)).grid(row=6, column=1)
-            tk.Button(self, text="Update Item Spending", font=("Cambria", 15),
-                command=lambda: parent.replace_frame(UpdateSpending)).grid(row=7, column=1)
+            tk.Button(self, text="Budget Item", font=("Cambria", 15), width=HOME_BUTTON_WIDTH,
+                relief="raised", command=lambda: parent.replace_frame(BudgetItemPage)).pack(pady=5)
+            tk.Button(self, text="Update Item Spending", font=("Cambria", 15), width=HOME_BUTTON_WIDTH,
+                relief="raised", command=lambda: parent.replace_frame(UpdateSpending)).pack(pady=5)
 
-        tk.Button(self, text="Graphs", font=("Cambria", 15),
-            command=lambda: parent.replace_frame(Charts)).grid(row=8, column=1)
-        tk.Button(self, text="Monthly Paycheck", font=("Cambria", 15),
-            command=lambda: parent.replace_frame(MonthlyAllowancePage)).grid(row=9, column=1)
-        tk.Button(self, text="Signout", font=("Cambria", 15),
-            command=lambda: parent.replace_frame(LoginPage)).grid(row=10, column=1)
+        tk.Button(self, text="Graphs", font=("Cambria", 15), width=HOME_BUTTON_WIDTH,
+            relief="raised", command=lambda: parent.replace_frame(Charts)).pack(pady=5)
+        tk.Button(self, text="Monthly Paycheck", font=("Cambria", 15), width=HOME_BUTTON_WIDTH,
+            relief="raised", command=lambda: parent.replace_frame(MonthlyAllowancePage)).pack(pady=5)
+        tk.Button(self, text="Signout", font=("Cambria", 15), width=HOME_BUTTON_WIDTH,
+            relief="raised", command=lambda: parent.replace_frame(LoginPage)).pack(pady=5)
         
     
 
@@ -120,6 +137,7 @@ class MonthlyAllowancePage(tk.Frame):
     '''Gets how much user will make that month, and the percentage amount they want to save. '''
     def __init__(self, parent):
         tk.Frame.__init__(self, parent)
+        tk.Frame.config(self, bg='lightblue')
         tk.Label(self, text="Put monthly paycheck and savings", font=("Cambria", 26)).grid(pady=10)
         self.monthlyPay = tk.Entry(self, font=("Cambria", 12))
         self.monthlyPay.insert(0, 'Monthly Paycheck')
@@ -182,12 +200,13 @@ class BudgetItemPage(tk.Frame):
 class UpdateSpending(tk.Frame):
     def __init__(self, parent):
         tk.Frame.__init__(self, parent)
+        tk.Frame.config(self, bg='lightblue')
         tk.Label(self, text="Update Spending for Budget Items").grid()
         self.spent = tk.Entry(self)
         self.spent.grid()
         self.spent.grid_remove()
         id = get_user_id(CURRENT_USER.username)
-        items = show_budget_items(id)
+        items  = show_budget_items(id)
         self.error = tk.Label(self, text="Needs to be a number!")
         def get_spent(item):
             try:
@@ -210,10 +229,11 @@ class UpdateSpending(tk.Frame):
         tk.Button(self, text="Home", command=lambda: parent.replace_frame(HomePage)).grid()
 
 class Charts(tk.Frame):
+    '''All the stats for the budgeting app will be shown here'''
     def __init__(self, parent):
         tk.Frame.__init__(self, parent)
-
-        tk.Label(self, text="Graphs and Charts of your Spending").grid(row=1, column=1)
+        tk.Frame.config(self, bg='lightblue')
+        tk.Label(self, text="Graphs and Charts of your Spending", bg="lightblue").pack()
         id = get_user_id(CURRENT_USER.username)
         '''Create Percent Budget Graph'''
         saving, item_percents = percentages_for_pie_chart(id)
@@ -237,14 +257,14 @@ class Charts(tk.Frame):
         
         self.canvas = FigureCanvasTkAgg(fig, master = window)
         self.toolbar = NavigationToolbar2Tk(self.canvas, window, pack_toolbar=False)
+        self.canvas.get_tk_widget().pack(side = BOTTOM)
         self.toolbar.update()
-        self.canvas.get_tk_widget().grid(row=0, column=1, sticky='nswe')
-        self.toolbar.grid(row=1, column=1)
+        self.toolbar.pack(side=BOTTOM)
 
         def percent_budget_graph():
             '''Create Percent Budget Graph'''
-            self.canvas.get_tk_widget().grid_remove()
-            self.toolbar.grid_remove()
+            self.canvas.get_tk_widget().pack_forget()
+            self.toolbar.pack_forget()
             saving, item_percents = percentages_for_pie_chart(id)
             item_percentages = [saving[1]]
             labels = ['Savings']
@@ -266,51 +286,50 @@ class Charts(tk.Frame):
             self.canvas = FigureCanvasTkAgg(fig, master = window)
             self.toolbar = NavigationToolbar2Tk(self.canvas, window, pack_toolbar=False)
             self.toolbar.update()
-            self.canvas.get_tk_widget().grid(row=0, column=1, sticky='nswe')
-            self.toolbar.grid(row=1, column=1)
+            self.canvas.get_tk_widget().pack()
+            self.toolbar.pack()
 
         def clear_page():
             '''Get rid of graph and changes the page'''
-            self.canvas.get_tk_widget().grid_remove()
-            self.toolbar.grid_remove()
+            self.canvas.get_tk_widget().pack_forget()
+            self.toolbar.pack_forget()
             return parent.replace_frame(HomePage)
 
         def spending_graph():
             '''How much has the user spent and how much left they have to spend'''
-            self.canvas.get_tk_widget().grid_remove()
-            self.toolbar.grid_remove()
-            # TODO make spending graph
-            saving, item_percents = percentages_for_pie_chart(id)
-            item_percentages = [saving[1]]
-            labels = ['Savings']
-            for item in item_percents:
-                item_percentages.append(item[1])
-                labels.append(item[0])
-            empty = 0
-            for item in item_percentages:
-                empty += item
-            if empty != 100:
-                unassigned = 100 - empty
-                item_percentages.append(unassigned)
-                labels.append('Unassigned')
+            self.canvas.get_tk_widget().pack_forget()
+            self.toolbar.pack_forget()
+            total_amount, item_info = info_for_spending_bar_chart(id)
+            items = []
+            spent_on_item = []
+            for item in item_info:
+                items.append(item[0])
+                spent_on_item.append(item[2])
             fig = Figure(figsize=(5,5), dpi = 100)
-            plot1 = fig.add_subplot(111)
-            plot1.pie(item_percentages, labels=labels, wedgeprops={'edgecolor': 'black'}, )
-
+            chart = fig.add_subplot(111)
+            chart.set_title("Spending on your items")
+            chart.bar(items, spent_on_item)
+            chart.set_ylim(0, total_amount[0])
             self.canvas = FigureCanvasTkAgg(fig, master = window)
             self.toolbar = NavigationToolbar2Tk(self.canvas, window, pack_toolbar=False)
             self.toolbar.update()
-            self.canvas.get_tk_widget().grid(row=0, column=1, sticky='nswe')
-            self.toolbar.grid(row=1, column=1)       
+            self.canvas.get_tk_widget().pack()
+            self.toolbar.pack()
+
+        def amount_left():
+            pass       
 
         tk.Button(self, text="percent budget graph", 
-            command=percent_budget_graph).grid(row=3, column=1)
+            command=percent_budget_graph).pack()
 
         tk.Button(self, text="Left To Spend", 
-            command=spending_graph).grid(row=4, column=1)
+            command=spending_graph).pack()
+        
+        tk.Button(self, text="Amount Remaining",
+            command=amount_left).pack()
 
         tk.Button(self, text="Home Page",
-            command=clear_page).grid(row=5, column=1)
+            command=clear_page).pack()
     
 
 if __name__ == '__main__':
@@ -321,5 +340,4 @@ if __name__ == '__main__':
     window.config(bg="lightblue")
     window.title("Budgeting App")
     window.mainloop()
-
     

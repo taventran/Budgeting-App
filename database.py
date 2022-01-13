@@ -109,9 +109,8 @@ def show_budget_items(id):
 def update_spending_budget_item(spent, item):
     with conn:
         c.execute("UPDATE items set spent = ? where item = ?", (spent, item))
-    c.execute("SELECT * FROM items where item=:item", {'item':item})
+
     check = c.fetchall()
-    print(check)
     return check
 
 
@@ -122,7 +121,7 @@ def delete_budget_item(item):
 def get_already_spent(item):
     c.execute("SELECT * FROM items where item=:item", {'item':item})
     check = c.fetchone()
-    return check[3]
+    return check[2]
 
 def percentages_for_pie_chart(id):
     c.execute("SELECT * FROM moneyAmount where user_id=:user_id", {'user_id':id})
@@ -137,7 +136,6 @@ def info_for_spending_bar_chart(id):
         total_amount_to_spend = c.fetchone()
         c.execute("SELECT * FROM items where user_id=:user_id", {'user_id':id})
         spent_on_items = c.fetchall()
-        print(spent_on_items)
     return total_amount_to_spend, spent_on_items
 
   
