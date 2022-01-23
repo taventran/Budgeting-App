@@ -1,7 +1,6 @@
 '''
 Create class models that will be used by gui.py to organize how the information will be created by the database
 '''
-from datetime import date
 
 class User():
     '''User class'''

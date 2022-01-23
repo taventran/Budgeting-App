@@ -1,4 +1,4 @@
-from  matplotlib import pyplot as plt
+from matplotlib import pyplot as plt
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 from database import info_for_spending_bar_chart, percentages_for_pie_chart

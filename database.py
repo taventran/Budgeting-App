@@ -2,6 +2,7 @@
 Handles most of the database logic for the application
 '''
 import sqlite3
+from datetime import datetime
 
 conn = sqlite3.connect('database.db')
 c = conn.cursor()
@@ -26,7 +27,9 @@ c.execute('''CREATE TABLE IF NOT EXISTS items (
             spent REAL,
             user_id INTEGER,
             FOREIGN KEY(user_id) REFERENCES USER(ID)
-        )''')
+        );''')
+
+
 
 
 def create_user(User):
@@ -138,4 +141,3 @@ def info_for_spending_bar_chart(id):
         spent_on_items = c.fetchall()
     return total_amount_to_spend, spent_on_items
 
-  

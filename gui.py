@@ -12,6 +12,7 @@ from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 import tkinter as tk
 from database import percentages_for_pie_chart
+from datetime import date
 
 # Set current user to none and changes it once a valid login occurs
 CURRENT_USER = None
@@ -20,8 +21,6 @@ LARGE_TEXT_FONT = ("Cambria", 50)
 MEDIUM_TEXT_FONT = ("Cambria", 20)
 BUTTON_FONT = ("Cambria", 15)
 ENTRY_BOXES_WIDTH = 30
-
-
 HOME_BUTTON_WIDTH = 40
 REGISTER_BUTTON_WIDTH = 25
 
@@ -108,6 +107,7 @@ class HomePage(tk.Frame):
     def __init__(self, parent):
         tk.Frame.__init__(self, parent)
         tk.Frame.config(self, bg='lightblue')
+        tk.Label(self, text=date.today(), font=LARGE_TEXT_FONT, bg='lightblue').pack()
         tk.Label(self, text="Home Page", font=LARGE_TEXT_FONT, bg='lightblue').pack()
         tk.Label(self, text=f"{CURRENT_USER.username} welcome!", font=LARGE_TEXT_FONT, bg='lightblue').pack()
         id = get_user_id(CURRENT_USER.username)
@@ -124,9 +124,9 @@ class HomePage(tk.Frame):
                 relief="raised", command=lambda: parent.replace_frame(BudgetItemPage)).pack(pady=5)
             tk.Button(self, text="Update Item Spending", font=("Cambria", 15), width=HOME_BUTTON_WIDTH,
                 relief="raised", command=lambda: parent.replace_frame(UpdateSpending)).pack(pady=5)
+            tk.Button(self, text="Graphs", font=("Cambria", 15), width=HOME_BUTTON_WIDTH,
+                relief="raised", command=lambda: parent.replace_frame(Charts)).pack(pady=5)
 
-        tk.Button(self, text="Graphs", font=("Cambria", 15), width=HOME_BUTTON_WIDTH,
-            relief="raised", command=lambda: parent.replace_frame(Charts)).pack(pady=5)
         tk.Button(self, text="Monthly Paycheck", font=("Cambria", 15), width=HOME_BUTTON_WIDTH,
             relief="raised", command=lambda: parent.replace_frame(MonthlyAllowancePage)).pack(pady=5)
         tk.Button(self, text="Signout", font=("Cambria", 15), width=HOME_BUTTON_WIDTH,
@@ -301,11 +301,17 @@ class Charts(tk.Frame):
             self.canvas.get_tk_widget().pack_forget()
             self.toolbar.pack_forget()
             total_amount, item_info = info_for_spending_bar_chart(id)
+            total_spent = 0
             items = []
             spent_on_item = []
             for item in item_info:
                 items.append(item[0])
                 spent_on_item.append(item[2])
+                total_spent += item[2]
+            
+            spent_on_item.append(total_spent)
+            items.append('Total spent')
+
             fig = Figure(figsize=(5,5), dpi = 100)
             chart = fig.add_subplot(111)
             chart.set_title("Spending on your items")
