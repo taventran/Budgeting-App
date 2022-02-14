@@ -17,6 +17,7 @@ from datetime import date
 # Set current user to none and changes it once a valid login occurs
 CURRENT_USER = None
 
+# Set fonts and sizes to be used in the gui
 LARGE_TEXT_FONT = ("Cambria", 50)
 MEDIUM_TEXT_FONT = ("Cambria", 20)
 BUTTON_FONT = ("Cambria", 15)
@@ -76,14 +77,14 @@ class RegisterPage(tk.Frame):
     def __init__(self, parent):
         tk.Frame.__init__(self, parent)
         tk.Frame.config(self, bg='lightblue')
-        tk.Label(self, text="Register page", font=("Cambria", 26)).pack()
-        self.password = tk.Entry(self, font=("Cambria", 12))
-        self.user = tk.Entry(self, font=("Cambria", 12))
+        tk.Label(self, text="Register page", font=("Cambria", 26), bg="lightblue").pack()
+        self.password = tk.Entry(self, font=MEDIUM_TEXT_FONT)
+        self.user = tk.Entry(self, font=MEDIUM_TEXT_FONT)
         self.user.insert(0, 'New Username')
         self.password.insert(0, 'New Code 6 Numbers!')
         self.user.pack(pady=10)
         self.password.pack(pady=10)
-        self.invalid = tk.Label(self, text="Username already taken", font=("Cambria", 12))
+        self.invalid = tk.Label(self, text="Username already taken", font=MEDIUM_TEXT_FONT)
         self.invalid.pack()
         self.invalid.pack_forget()
 
@@ -98,18 +99,18 @@ class RegisterPage(tk.Frame):
                 self.invalid.pack()
 
         tk.Button(self, text="Submit", command=get_info, width=REGISTER_BUTTON_WIDTH,
-            font=("Cambria", 12)).pack()
+            font=BUTTON_FONT).pack(pady=5)
         tk.Button(self, text="Login Page", width=REGISTER_BUTTON_WIDTH,
-            command=lambda: parent.replace_frame(LoginPage), font=("Cambria", 12)).pack()
+            command=lambda: parent.replace_frame(LoginPage), font=BUTTON_FONT).pack(pady=5)
         
 
 class HomePage(tk.Frame):
     def __init__(self, parent):
         tk.Frame.__init__(self, parent)
         tk.Frame.config(self, bg='lightblue')
-        tk.Label(self, text=date.today(), font=LARGE_TEXT_FONT, bg='lightblue').pack()
         tk.Label(self, text="Home Page", font=LARGE_TEXT_FONT, bg='lightblue').pack()
         tk.Label(self, text=f"{CURRENT_USER.username} welcome!", font=LARGE_TEXT_FONT, bg='lightblue').pack()
+        tk.Label(self, text=date.today(), font=MEDIUM_TEXT_FONT, bg='lightblue').pack()
         id = get_user_id(CURRENT_USER.username)
         info = display_money(id)
 
@@ -213,7 +214,7 @@ class UpdateSpending(tk.Frame):
             try:
                 just_spent = float(self.spent.get())
                 total_spent = just_spent + get_already_spent(item)
-                update_spending_budget_item(total_spent, item)
+                update_spending_budget_item(total_spent, item, just_spent)
                 self.error.destroy()
                 return parent.replace_frame(HomePage)
             except ValueError:
@@ -341,7 +342,7 @@ class Charts(tk.Frame):
 
 if __name__ == '__main__':
     window = BuildPage()
-    window.geometry("750x500")
+    window.geometry("750x600")
     window.grid_rowconfigure(0, weight=1)
     window.grid_columnconfigure(0, weight=1)
     window.config(bg="lightblue")

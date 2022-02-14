@@ -1,3 +1,15 @@
+from datetime import date
+
+print(date.today())
+
+today = str(date.today())
+year = int(today[0:4])
+month = int(today[5:7])
+day = int(today[8:10])
+
+print(year, month, day)
+
+"""
 import sqlite3
 from datetime import datetime
 
@@ -18,3 +30,4 @@ message = c.fetchone()
 print(message)
 
 c.close()
+"""

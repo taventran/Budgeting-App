@@ -2,7 +2,7 @@
 Handles most of the database logic for the application
 '''
 import sqlite3
-from datetime import datetime
+from datetime import date
 
 conn = sqlite3.connect('database.db')
 c = conn.cursor()
@@ -26,11 +26,18 @@ c.execute('''CREATE TABLE IF NOT EXISTS items (
             percent INTEGER,
             spent REAL,
             user_id INTEGER,
-            FOREIGN KEY(user_id) REFERENCES USER(ID)
+            ID INTEGER PRIMARY KEY,
+            FOREIGN KEY(user_id) REFERENCES users(ID)
         );''')
 
-
-
+c.execute('''CREATE TABLE IF NOT EXISTS spending (
+            month INTEGER,
+            day INTEGER,
+            year INTEGER,
+            spending REAL,
+            items_id,
+            FOREIGN KEY(items_id) REFERENCES items(ID)
+        );''')
 
 def create_user(User):
     new_username = User.username
@@ -66,7 +73,6 @@ def get_user_id(username):
     c.execute("SELECT * FROM users where username=:username", {"username": username})
     get_id = c.fetchall()
     id = [info[0] for info in get_id]
-    print(id)
     return id[0]
 
 
@@ -88,8 +94,6 @@ def get_amount_of_money(MoneyAmount, id):
         for item in check:
             pass
             
-
-
 def display_money(id):
     with conn:
         c.execute("SELECT * FROM moneyAmount where user_id=:user_id", {'user_id':id})
@@ -109,13 +113,24 @@ def show_budget_items(id):
     return check
 
 
-def update_spending_budget_item(spent, item):
+# FIXME make it to where users will only see their item by checking user_id
+def update_spending_budget_item(spent, item, just_spent):
     with conn:
+        today = str(date.today())
+        year = int(today[0:4])
+        month = int(today[5:7])
+        day = int(today[8:10])
         c.execute("UPDATE items set spent = ? where item = ?", (spent, item))
+        check = c.fetchone()
+        c.execute("select * FROM items where item=:item", {'item':item})
+        get_item_id = c.fetchone()
 
-    check = c.fetchall()
-    return check
+        c.execute("INSERT into spending('month', 'day', 'year', 'spending', 'items_id') VALUES (?, ?, ?, ?, ?)",
+            (month, day, year, just_spent, get_item_id[4]))
 
+        c.execute("select * FROM spending where items_id=:items_id", {'items_id':get_item_id[4]})
+        check = c.fetchall()
+        print(check)
 
 def delete_budget_item(item):
     with conn:
@@ -140,4 +155,5 @@ def info_for_spending_bar_chart(id):
         c.execute("SELECT * FROM items where user_id=:user_id", {'user_id':id})
         spent_on_items = c.fetchall()
     return total_amount_to_spend, spent_on_items
+
 
