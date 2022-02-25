@@ -35,8 +35,10 @@ c.execute('''CREATE TABLE IF NOT EXISTS spending (
             day INTEGER,
             year INTEGER,
             spending REAL,
+            user_id INTEGER,
             items_id,
             FOREIGN KEY(items_id) REFERENCES items(ID)
+            FOREIGN KEY(user_id) REFERENCES users(ID)
         );''')
 
 def create_user(User):
@@ -70,9 +72,10 @@ def verify_login(User):
 
 
 def get_user_id(username):
-    c.execute("SELECT * FROM users where username=:username", {"username": username})
-    get_id = c.fetchall()
-    id = [info[0] for info in get_id]
+    with conn:
+        c.execute("SELECT * FROM users where username=:username", {"username": username})
+        get_id = c.fetchall()
+        id = [info[0] for info in get_id]
     return id[0]
 
 
@@ -106,15 +109,13 @@ def get_budget_item(BudgetItem, id):
         c.execute("INSERT INTO items('item', 'percent', 'spent', 'user_id') VALUES (?, ?, ?, ?)",
                     (BudgetItem.item, BudgetItem.percentages, BudgetItem.amount_spent, id))
 
-
 def show_budget_items(id):
     c.execute("SELECT * FROM items where user_id=:user_id", {'user_id':id})
     check = c.fetchall()
     return check
 
 
-# FIXME make it to where users will only see their item by checking user_id
-def update_spending_budget_item(spent, item, just_spent):
+def update_spending_budget_item(spent, item, just_spent, id):
     with conn:
         today = str(date.today())
         year = int(today[0:4])
@@ -125,21 +126,24 @@ def update_spending_budget_item(spent, item, just_spent):
         c.execute("select * FROM items where item=:item", {'item':item})
         get_item_id = c.fetchone()
 
-        c.execute("INSERT into spending('month', 'day', 'year', 'spending', 'items_id') VALUES (?, ?, ?, ?, ?)",
-            (month, day, year, just_spent, get_item_id[4]))
+        c.execute("INSERT into spending('month', 'day', 'year', 'spending', 'items_id', 'user_id') VALUES (?, ?, ?, ?, ?, ?)",
+            (month, day, year, just_spent, get_item_id[4], id))
 
         c.execute("select * FROM spending where items_id=:items_id", {'items_id':get_item_id[4]})
         check = c.fetchall()
         print(check)
 
+# FIXME make it to where users will only delete their item by checking user_id
 def delete_budget_item(item):
     with conn:
         c.execute("DELETE from items where item=:item", {'item':item})
 
+# FIXME make it to where users will only delete their item by checking user_id
 def get_already_spent(item):
     c.execute("SELECT * FROM items where item=:item", {'item':item})
     check = c.fetchone()
     return check[2]
+
 
 def percentages_for_pie_chart(id):
     c.execute("SELECT * FROM moneyAmount where user_id=:user_id", {'user_id':id})

@@ -33,7 +33,7 @@ class BuildPage(tk.Tk):
         self.replace_frame(LoginPage)
     
     def replace_frame(self, frame_class):
-        #Destroys current frame and replaces it with a new one.
+        # Destroys current frame and replaces it with a new one.
         new_frame = frame_class(self)
         if self._frame is not None:
             self._frame.destroy()
@@ -118,8 +118,10 @@ class HomePage(tk.Frame):
             monthly_allowance = [allowance[0] for allowance in info]
             savings = [save[1] for save in info]
             savings_in_dollars = [dollar_amount[2] for dollar_amount in info]
-            information = tk.Label(self, text=f"Monthly Paycheck {monthly_allowance[0]:.2f}", bg='lightblue', font=MEDIUM_TEXT_FONT).pack()
-            information3 = tk.Label(self, text=f"Saving {savings_in_dollars[0]:.2f}$ this month", bg='lightblue', font=MEDIUM_TEXT_FONT).pack()
+            information = tk.Label(self, text=f"Monthly Paycheck {monthly_allowance[0]:.2f}", 
+                bg='lightblue', font=MEDIUM_TEXT_FONT).pack()
+            information3 = tk.Label(self, text=f"Saving {savings_in_dollars[0]:.2f}$ this month", 
+                bg='lightblue', font=MEDIUM_TEXT_FONT).pack()
 
             tk.Button(self, text="Budget Item", font=("Cambria", 15), width=HOME_BUTTON_WIDTH,
                 relief="raised", command=lambda: parent.replace_frame(BudgetItemPage)).pack(pady=5)
@@ -214,7 +216,7 @@ class UpdateSpending(tk.Frame):
             try:
                 just_spent = float(self.spent.get())
                 total_spent = just_spent + get_already_spent(item)
-                update_spending_budget_item(total_spent, item, just_spent)
+                update_spending_budget_item(total_spent, item, just_spent, id)
                 self.error.destroy()
                 return parent.replace_frame(HomePage)
             except ValueError:
