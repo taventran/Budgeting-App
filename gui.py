@@ -1,5 +1,5 @@
 '''
-Budgeting app that shows how much a user can spend based on what percentage 
+Budgeting app that shows how much a user can spend based on what percentage
 of their paycheck they allocate to that sector
 '''
 import tkinter as tk
@@ -7,7 +7,7 @@ from tkinter.constants import BOTTOM
 from graphs import display_pie_chart
 from models import User, MoneyAmount, BudgetItem
 from database import create_user, show_budget_items, update_spending_budget_item, get_already_spent, info_for_spending_bar_chart
-from database import verify_login, get_user_id, get_amount_of_money, display_money, get_budget_item, show_budget_items
+from database import verify_login, get_user_id, get_amount_of_money, display_money, get_budget_item, show_budget_items, delete_budget_item
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 import tkinter as tk
@@ -24,7 +24,7 @@ BUTTON_FONT = ("Cambria", 15)
 ENTRY_BOXES_WIDTH = 30
 HOME_BUTTON_WIDTH = 40
 REGISTER_BUTTON_WIDTH = 25
-
+ITEM_BUTTON_WIDTH = 30
 
 class BuildPage(tk.Tk):
     def __init__(self):
@@ -69,9 +69,9 @@ class LoginPage(tk.Frame):
                 self.invalid.pack()
   
         tk.Button(self, text="Login", width=REGISTER_BUTTON_WIDTH,
-            command=get_user, font=("cambria", 15)).pack(pady=5)
+            command=get_user, font=BUTTON_FONT).pack(pady=5)
         tk.Button(self, text="New User", width=REGISTER_BUTTON_WIDTH,
-            command=lambda: parent.replace_frame(RegisterPage), font=("cambria", 15)).pack(pady=5)
+            command=lambda: parent.replace_frame(RegisterPage), font=BUTTON_FONT).pack(pady=5)
 
 class RegisterPage(tk.Frame):
     def __init__(self, parent):
@@ -167,8 +167,8 @@ class MonthlyAllowancePage(tk.Frame):
                 self.error.grid()
 
         tk.Label(text="Invalid Entry")
-        tk.Button(self, text="Submit", command=get_info, font=("Cambria", 15)).grid()
-        tk.Button(self, text="Home Page", font=("Cambria", 15),
+        tk.Button(self, text="Submit", command=get_info, font=BUTTON_FONT).grid()
+        tk.Button(self, text="Home Page", font=BUTTON_FONT,
             command=lambda: parent.replace_frame(HomePage)).grid()
 
 
@@ -205,32 +205,40 @@ class UpdateSpending(tk.Frame):
     def __init__(self, parent):
         tk.Frame.__init__(self, parent)
         tk.Frame.config(self, bg='lightblue')
-        tk.Label(self, text="Update Spending for Budget Items").grid()
-        self.spent = tk.Entry(self)
-        self.spent.grid()
-        self.spent.grid_remove()
+        tk.Label(self, text="Update Spending for Budget Items", bg='lightblue', font = MEDIUM_TEXT_FONT).pack()
+        self.spent = tk.Entry(self, width = ENTRY_BOXES_WIDTH)
+        self.spent.pack()
+        self.spent.pack_forget()
         id = get_user_id(CURRENT_USER.username)
         items  = show_budget_items(id)
         self.error = tk.Label(self, text="Needs to be a number!")
         def get_spent(item):
             try:
                 just_spent = float(self.spent.get())
-                total_spent = just_spent + get_already_spent(item)
+                total_spent = just_spent + get_already_spent(item, id)
                 update_spending_budget_item(total_spent, item, just_spent, id)
                 self.error.destroy()
                 return parent.replace_frame(HomePage)
             except ValueError:
-                self.error.grid()
+                self.error.pack()
 
         def get_item(item):
-            tk.Label(text=f'How much did you spend on {item[0]} today?')
-            self.spent.grid()
-            tk.Button(self, text="submit", command = lambda: get_spent(item[0])).grid()
-        
-        for item in items:  
-            button = tk.Button(self, text=f'{item}', command= get_item(item)).grid()
+            tk.Button(self, font =  BUTTON_FONT, width = ITEM_BUTTON_WIDTH, text=f"update spending {item[0]}", command = lambda: update_item(item[0])).pack(pady=10)
+            tk.Button(self, font =  BUTTON_FONT, width = ITEM_BUTTON_WIDTH, text=f"delete {item[0]}", command = lambda: delete_item(item[0])).pack(pady=10)
+            return item
 
-        tk.Button(self, text="Home", command=lambda: parent.replace_frame(HomePage)).grid()
+        def delete_item(item):
+            tk.Button(self, font =  BUTTON_FONT, width = ITEM_BUTTON_WIDTH,  text=f"delete {item} item?", command = lambda: [delete_budget_item(item, id), parent.replace_frame(UpdateSpending)]).pack(pady=10)
+
+        def update_item(item):
+            text = tk.Label(text=f'How much did you spend on {item} today?', bg='lightblue').pack(pady=10)
+            self.spent.pack(pady=10)
+            tk.Button(self, font =  BUTTON_FONT, width = ITEM_BUTTON_WIDTH,  text="submit", command = lambda: [get_spent(item), text.pack_forget(), parent.replace_frame(UpdateSpending)]).pack()
+
+        for item in items:  
+            get_item(item)
+
+        tk.Button(self, font =  BUTTON_FONT, width = ITEM_BUTTON_WIDTH,  text="Home", command=lambda: parent.replace_frame(HomePage)).pack()
 
 class Charts(tk.Frame):
     '''All the stats for the budgeting app will be shown here'''

@@ -18,6 +18,8 @@ c.execute('''CREATE TABLE IF NOT EXISTS moneyAmount (
             savings INTEGER,
             savings_dollar_amount real,
             user_id INTEGER,
+            month INTEGER,
+            year INTEGER,
             FOREIGN KEY(user_id) REFERENCES users(ID)
             );''')
 
@@ -79,18 +81,20 @@ def get_user_id(username):
     return id[0]
 
 
-def get_amount_of_money(MoneyAmount, id):
-    money = 0    
+def get_amount_of_money(MoneyAmount, id): 
+    today = str(date.today())
+    year = int(today[0:4])
+    month = int(today[5:7])
     with conn:
-        c.execute("SELECT * FROM moneyAmount where user_id=:user_id", {'user_id':id})
+        c.execute("SELECT * FROM moneyAmount where user_id=:user_id and month=month and year=year", {'user_id':id, 'month':month, 'year':year})
         check = c.fetchall()
         if len(check) == 1:
             c.execute("DELETE From moneyAmount where user_id=:user_id", {'user_id':id})
-            c.execute("INSERT INTO moneyAmount('monthlyAmount', 'savings', 'savings_dollar_amount', 'user_id') VALUES (?, ?, ?, ?)",
-                (MoneyAmount.monthly_check, MoneyAmount.savings, MoneyAmount.savings_dollar_amount, id))
+            c.execute("INSERT INTO moneyAmount('monthlyAmount', 'savings', 'savings_dollar_amount', 'user_id', 'month', 'year') VALUES (?, ?, ?, ?, ?, ?)",
+                (MoneyAmount.monthly_check, MoneyAmount.savings, MoneyAmount.savings_dollar_amount, id, month, year))
         else:
-            c.execute("INSERT INTO moneyAmount('monthlyAmount', 'savings', 'savings_dollar_amount', 'user_id') VALUES (?, ?, ?, ?)",
-                (MoneyAmount.monthly_check, MoneyAmount.savings, MoneyAmount.savings_dollar_amount, id))
+            c.execute("INSERT INTO moneyAmount('monthlyAmount', 'savings', 'savings_dollar_amount', 'user_id', 'month', 'year') VALUES (?, ?, ?, ?, ?, ?)",
+                (MoneyAmount.monthly_check, MoneyAmount.savings, MoneyAmount.savings_dollar_amount, id, month, year))
     with conn:
         c.execute("SELECT * FROM items where user_id=:user_id", {'user_id':id})
         check = c.fetchall()
@@ -98,9 +102,15 @@ def get_amount_of_money(MoneyAmount, id):
             pass
             
 def display_money(id):
+    today = str(date.today())
+    year = int(today[0:4])
+    month = int(today[5:7])
+    print(year)
+    print(month)
     with conn:
-        c.execute("SELECT * FROM moneyAmount where user_id=:user_id", {'user_id':id})
+        c.execute("SELECT * FROM moneyAmount where user_id=:user_id and month=:month and year=:year", {'user_id':id, 'month':month, 'year':year})
         check = c.fetchall()
+    print(check)
     return(check)
 
 
@@ -133,14 +143,12 @@ def update_spending_budget_item(spent, item, just_spent, id):
         check = c.fetchall()
         print(check)
 
-# FIXME make it to where users will only delete their item by checking user_id
-def delete_budget_item(item):
-    with conn:
-        c.execute("DELETE from items where item=:item", {'item':item})
 
-# FIXME make it to where users will only delete their item by checking user_id
-def get_already_spent(item):
-    c.execute("SELECT * FROM items where item=:item", {'item':item})
+def delete_budget_item(item, id):
+    with conn:
+        c.execute("DELETE from items where item=:item and user_id=:user_id", {'item':item, 'user_id':id})
+def get_already_spent(item, id):
+    c.execute("SELECT * FROM items where item=:item and user_id=:user_id", {'item':item, 'user_id':id})
     check = c.fetchone()
     return check[2]
 
@@ -151,6 +159,7 @@ def percentages_for_pie_chart(id):
     c.execute("SELECT * FROM items where user_id=:user_id", {'user_id':id})
     item_percents = c.fetchall()
     return savings, item_percents
+
 
 def info_for_spending_bar_chart(id):
     with conn:
