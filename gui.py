@@ -4,7 +4,6 @@ of their paycheck they allocate to that sector
 '''
 import tkinter as tk
 from tkinter.constants import BOTTOM
-from graphs import display_pie_chart
 from models import User, MoneyAmount, BudgetItem
 from database import create_user, show_budget_items, update_spending_budget_item, get_already_spent, info_for_spending_bar_chart
 from database import verify_login, get_user_id, get_amount_of_money, display_money, get_budget_item, show_budget_items, delete_budget_item
