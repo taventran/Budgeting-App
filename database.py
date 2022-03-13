@@ -105,12 +105,11 @@ def display_money(id):
     today = str(date.today())
     year = int(today[0:4])
     month = int(today[5:7])
-    print(year)
-    print(month)
+
     with conn:
         c.execute("SELECT * FROM moneyAmount where user_id=:user_id and month=:month and year=:year", {'user_id':id, 'month':month, 'year':year})
         check = c.fetchall()
-    print(check)
+
     return(check)
 
 
@@ -141,12 +140,13 @@ def update_spending_budget_item(spent, item, just_spent, id):
 
         c.execute("select * FROM spending where items_id=:items_id", {'items_id':get_item_id[4]})
         check = c.fetchall()
-        print(check)
+
 
 
 def delete_budget_item(item, id):
     with conn:
         c.execute("DELETE from items where item=:item and user_id=:user_id", {'item':item, 'user_id':id})
+
 def get_already_spent(item, id):
     c.execute("SELECT * FROM items where item=:item and user_id=:user_id", {'item':item, 'user_id':id})
     check = c.fetchone()
@@ -168,5 +168,20 @@ def info_for_spending_bar_chart(id):
         c.execute("SELECT * FROM items where user_id=:user_id", {'user_id':id})
         spent_on_items = c.fetchall()
     return total_amount_to_spend, spent_on_items
+
+def spending_remaining_chart(id):
+     with conn:
+        c.execute("SELECT * FROM moneyAmount where user_id=:user_id", {'user_id':id})
+        total_amount_to_spend = c.fetchone()
+        c.execute("SELECT * FROM items where user_id=:user_id", {'user_id':id})
+        spent_on_items = c.fetchall()
+        amount_to_spend_left = []
+        items = []
+        for item in spent_on_items:
+            items.append(item[0])
+            total_amount_allowed_on_item = total_amount_to_spend[0] * item[1]/100
+            amount_to_spend_left.append(total_amount_allowed_on_item - item[2])
+
+        return items, amount_to_spend_left
 
 
